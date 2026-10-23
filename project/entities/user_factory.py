@@ -55,3 +55,15 @@ class UserFactory:
         name = UserRandomUtil.generate_random_first_and_last_name()
         sign_up_page.sign_up_user(email, password, name)
         sign_up_page.verify_successful_message()
+
+    @staticmethod
+    @allure.step("Create authenticated user via API")
+    def create_authenticated_user_via_api() -> UserModel:
+        user = UserFactory.sign_up_user_via_api()
+
+        user.token = UserAPIUtil.get_user_token(
+            user.email,
+            user.password,
+        )
+
+        return user

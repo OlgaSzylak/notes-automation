@@ -1,8 +1,8 @@
 import allure
+from playwright.sync_api import Page
 
 from data import config
 from project.pages.login_page import LoginPage
-from playwright.sync_api import Page
 
 
 def login(page, registered_user):
@@ -13,7 +13,6 @@ def login(page, registered_user):
         registered_user.email,
         registered_user.password)
     login_page.verify_logout_button_displayed()
-    page.pause()
 
 
 @allure.parent_suite("User")

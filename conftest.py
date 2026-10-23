@@ -1,9 +1,11 @@
-import subprocess
+from http import HTTPStatus
+
 import pytest
 import subprocess
 from pathlib import Path
 
 from project.entities.user_factory import UserFactory
+from project.utils.api.user_api_util import UserAPIUtil
 
 ROOT_DIR = Path(__file__).resolve().parent
 RESULTS_DIR = ROOT_DIR / "allure-results"
@@ -31,4 +33,25 @@ def pytest_sessionfinish(session, exitstatus):
 
 @pytest.fixture
 def registered_user():
-    return UserFactory.sign_up_user_via_api()
+    user = UserFactory.sign_up_user_via_api()
+    print(f"\n[SETUP] Created user: {user.email}")
+
+    try:
+        yield user
+    finally:
+        print(f"\n[CLEANUP] Deleting user: {user.email}")
+
+        token = UserAPIUtil.get_user_token(
+            user.email,
+            user.password,
+        )
+        response = UserAPIUtil.delete_user(token)
+
+        print(f"[CLEANUP] Status: {response.status_code}")
+        print(f"[CLEANUP] Response: {response.text}")
+
+        assert response.status_code == HTTPStatus.OK, (
+            f"User cleanup failed: HTTP {response.status_code}"
+        )
+
+        print(f"[CLEANUP] Successfully deleted user: {user.email}")
