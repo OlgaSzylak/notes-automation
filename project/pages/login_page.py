@@ -1,5 +1,6 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 
+from enums.messages import ErrorMessages
 from framework.soft_assert import SoftAssert
 from project.forms.auth_form import AuthForm
 from project.pages.base_page import BasePage
@@ -23,3 +24,12 @@ class LoginPage(BasePage):
     def verify_logout_button_displayed(self):
         self.soft_assert.assert_visible(self.page.locator(self.logout_btn),
                                         "'Logout' button is not displayed")
+
+    def verify_invalid_email_message(self):
+        self.soft_assert.assert_visible(
+            self.page.get_by_text(
+                ErrorMessages.INVALID_EMAIL_MSG.value,
+                exact=True,
+            ),
+            "Invalid email validation message is not displayed",
+        )

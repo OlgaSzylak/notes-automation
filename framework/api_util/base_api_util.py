@@ -10,7 +10,7 @@ def post(url, data):
         url,
         data=data,
         headers={"Accept": ContentTypes.JSON.value},
-        timeout=10
+        timeout=30
     )
     return response
 
