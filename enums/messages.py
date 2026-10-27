@@ -15,3 +15,4 @@ class ErrorMessages(str, Enum):
     MISSING_CONFIRM_PASSWORD_MSG = "Confirm Password is required"
     MISSING_EMAIL_MSG = "Email address is required"
     EMAIL_TAKEN_MSG = "An account already exists with the same email address"
+    INVALID_CREDENTIALS_MSG = "Incorrect email address or password"

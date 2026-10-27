@@ -1,17 +1,11 @@
-import re
-
 import unicodedata
+
 from playwright.sync_api import expect, Locator
 
 
 class SoftAssert:
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(SoftAssert, cls).__new__(cls)
-            cls._instance.errors = []
-        return cls._instance
+    def __init__(self):
+        self.errors = []
 
     def assert_visible(self, locator, message=""):
         try:
@@ -68,7 +62,3 @@ class SoftAssert:
         expected = SoftAssert.normalize_text(pattern)
         if expected not in actual:
             raise AssertionError(f"Expected pattern:\n  {expected}\nnot found in actual text:\n  {actual}")
-
-    @staticmethod
-    def instance():
-        return SoftAssert()

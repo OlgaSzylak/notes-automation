@@ -1,8 +1,8 @@
-from playwright.sync_api import Page
 import allure
+from playwright.sync_api import Page
 
-from enums.messages import Messages
-from project.forms.auth_form import AuthForm
+from enums.messages import Messages, ErrorMessages
+from framework.soft_assert import SoftAssert
 from project.pages.base_page import BasePage
 
 
@@ -14,15 +14,17 @@ class SignupPage(BasePage):
     register_name = "//input[@data-testid='register-name']"
     register_btn = "//button[@data-testid='register-submit']"
     success_alert = ".alert-success b"
+    alert_message = ".toast-body"
 
-    def __init__(self, page: Page):
-        super().__init__(page)
-        self.auth_form = AuthForm(page)
+    def __init__(self, page: Page, soft_assert: SoftAssert):
+        super().__init__(page, soft_assert)
 
-    def sign_up_user(self, email, password, name):
+    def sign_up_user(self, email, password, name, confirm_password=None):
         self.fill_email(email)
         self.fill_password(password)
-        self.reconfirm_password(password)
+        self.reconfirm_password(
+            password if confirm_password is None else confirm_password
+        )
         self.fill_name(name)
         self.click_register()
 
@@ -54,4 +56,11 @@ class SignupPage(BasePage):
             self.verify_element_text(
                 self.success_alert,
                 Messages.REGISTRATION_SUCCESS.value
+            )
+
+    def verify_duplicate_email_message(self):
+        with allure.step("Verify duplicated email message"):
+            self.verify_element_text(
+                self.alert_message,
+                ErrorMessages.EMAIL_TAKEN_MSG.value
             )

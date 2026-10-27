@@ -25,7 +25,7 @@ class UserRandomUtil:
 
     @staticmethod
     def generate_invalid_email():
-        return f"user_{uuid.uuid4().hex[:8]}"  # No @ or domain
+        return f"user_{uuid.uuid4().hex[:8]}"
 
     @staticmethod
     def generate_email_without_domain():
@@ -45,7 +45,6 @@ class UserRandomUtil:
 
     @staticmethod
     def generate_mismatched_password(password):
-        # Same length, but guaranteed to differ
         first_char = "B" if password.startswith("A") else "A"
         return first_char + password[1:]
 

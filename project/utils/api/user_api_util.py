@@ -3,30 +3,30 @@ from http import HTTPStatus
 import allure
 
 from data.api_url import URL_API_DASHBOARD_REGISTER, URL_API_DASHBOARD_LOGIN, URL_API_DASHBOARD_DELETE_USER
+from enums.messages import ErrorMessages
 from framework.api_util.base_api_util import post, delete
 
 
 class UserAPIUtil:
 
     @staticmethod
-    @allure.step("Register new user via API")
     def register_user(name, email, password):
-        payload = {
-            "name": name,
-            "email": email,
-            "password": password
-        }
-
-        return post(URL_API_DASHBOARD_REGISTER, payload)
+        with allure.step("Register new user via API"):
+            payload = {
+                "name": name,
+                "email": email,
+                "password": password,
+            }
+            return post(URL_API_DASHBOARD_REGISTER, payload)
 
     @staticmethod
-    @allure.step("Log in user via API")
     def login_user(email, password):
-        payload = {
-            "email": email,
-            "password": password,
-        }
-        return post(URL_API_DASHBOARD_LOGIN, payload)
+        with allure.step("Log in user via API"):
+            payload = {
+                "email": email,
+                "password": password,
+            }
+            return post(URL_API_DASHBOARD_LOGIN, payload)
 
     @staticmethod
     def get_token(response) -> str:
@@ -35,17 +35,42 @@ class UserAPIUtil:
         return token
 
     @staticmethod
-    @allure.step("Get user token")
     def get_user_token(email, password) -> str:
-        response = UserAPIUtil.login_user(email, password)
+        with allure.step("Get user token"):
+            response = UserAPIUtil.login_user(email, password)
 
-        assert response.status_code == HTTPStatus.OK, (
-            f"Login failed: HTTP {response.status_code}"
-        )
+            assert response.status_code == HTTPStatus.OK, (
+                f"Login failed: HTTP {response.status_code}"
+            )
 
-        return UserAPIUtil.get_token(response)
+            return UserAPIUtil.get_token(response)
 
     @staticmethod
-    @allure.step("Delete user via API")
     def delete_user(token):
-        return delete(URL_API_DASHBOARD_DELETE_USER, token)
+        with allure.step("Delete user via API"):
+            return delete(URL_API_DASHBOARD_DELETE_USER, token)
+
+    @staticmethod
+    def delete_user_by_credentials(email: str, password: str, *, allow_missing: bool = False) -> None:
+        with allure.step("Delete user using credentials"):
+            login_response = UserAPIUtil.login_user(email, password)
+
+            if (
+                    allow_missing
+                    and login_response.status_code == HTTPStatus.UNAUTHORIZED
+                    and login_response.json().get("message")
+                    == ErrorMessages.INVALID_CREDENTIALS_MSG.value
+            ):
+                return
+
+            assert login_response.status_code == HTTPStatus.OK, (
+                f"Cleanup login failed: HTTP {login_response.status_code}. "
+                f"Response: {login_response.text}"
+            )
+            token = UserAPIUtil.get_token(login_response)
+            response = UserAPIUtil.delete_user(token)
+
+            assert response.status_code == HTTPStatus.OK, (
+                f"User cleanup failed: HTTP {response.status_code}. "
+                f"Response: {response.text}"
+            )
